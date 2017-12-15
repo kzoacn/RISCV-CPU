@@ -46,9 +46,13 @@ module instr_ctrl(
 	initial begin
 		pc=32'h00;
 		is_fetch=1'b1;
+		instr=32'h00;
 	end
 
 	always @ (posedge clk) begin
+
+		$display("is_fetch: %d",is_fetch);
+		$display("instr : %b",instr);
 		if(is_fetch) begin
 			if(!is_busy) begin
 				instr<=tmp_instr;

@@ -1,7 +1,7 @@
 `include "opcode.h"
 `include "ram.v"
 `include "alu.v"
-`define RS_SIZE 2
+`define RS_SIZE 3
 // TODO rs_size -> 32
 `define REG_SIZE 32
 
@@ -11,7 +11,9 @@
 	assign alu[i].fun3=fun3[i]; \
 	assign alu[i].rs1=vj[i]; \
 	assign alu[i].rs2=vk[i]; \
-	assign alu_busy[i]=alu[i].busy
+	assign alu_busy[i]=alu[i].busy; \
+	assign tres[i]=alu[i].res; \
+	assign alu_done[i]=alu[i].done
 
 	
 //	assign alu[i].res=res[i];
@@ -37,8 +39,12 @@ module rsreg(
 	);
 
 	//TODO NOP
+	//TODO 
+	assign is_busy = 1'b0;
+	assign get_npc = 1'b0;
+	wire[31:0] tres[0:`RS_SIZE];
 	reg busy[0:`RS_SIZE],start[0:`RS_SIZE];
-	wire alu_busy[0:`RS_SIZE];
+	wire alu_busy[0:`RS_SIZE],alu_done[0:`RS_SIZE];
 	reg[6:0] opcode[0:`RS_SIZE];
 	reg[2:0] fun3[0:`RS_SIZE];
 	reg[6:0] fun7[0:`RS_SIZE];
@@ -69,6 +75,14 @@ module rsreg(
 		integer i;
 		qhead=0;qtail=0;qsz=0;
 		for(i=0;i<=`RS_SIZE;i=i+1) begin
+			busy[i]=0;start[i]=0;
+			opcode[i]=0;fun3[i]=0;
+			fun7[i]=0;vj[i]=0;
+			vk[i]=0;qk[i]=0;qj[i]=0;qi[i]=0;
+			A[i]=0;res[i]=0;
+			qreg[i]=0;
+			imm[i]=0;que[i]=0;
+			res_get[i]=0;
 			//TODO clear
 		end
 	end
@@ -76,10 +90,23 @@ module rsreg(
 
 	always @ (posedge clk) begin
 		//new cmd
-		if(_opcode==`OP_IMM 
+		
+
+		$display("opcode=%b",_opcode);
+		$display("rd=%b",rd);
+		$display("fun3=%b",_fun3);
+		$display("rs1=%b",rs1);
+		$display("rs2=%b",rs2);
+		$display("fun7=%b",_fun7);
+		$display("imm=%b",_imm);
+		$display("opc=%b",opc);
+
+		
+		
+		if((_opcode==`OP_IMM 
 			&& _fun3==`ALU_ADDSUB 
 			&& _fun7==7'b0000000
-			&& _imm==32'h00) begin
+			&& _imm==32'h00) || _opcode==7'b0000000) begin
 			//NOP do nothing
 		end
 		else begin : newcmd
@@ -89,6 +116,7 @@ module rsreg(
 					r=i;
 				end
 			end
+			$display("r=%x",r);
 //			r=que[qhead];
 //			qhead=qhead&(32'h1f);
 			if(_opcode==`OP_LOAD || _opcode==`OP_STORE) begin
@@ -133,28 +161,49 @@ module rsreg(
 
 			end
 			else begin
-				if(qi[rs1]==0) begin
-					vj[r]=qreg[rs1];
-					qj[r]=0;
-				end else begin
-					qj[r]=qi[rs1];
-				end
-				if(qi[rs2]) begin
-					vk[r]=qreg[rs2];
+				if(_opcode==`OP_IMM)begin
+					if(qi[rs1]==0) begin
+						vj[r]=qreg[rs1];
+						qj[r]=0;
+					end else begin
+						qj[r]=qi[rs1];
+					end
+
+					vk[r]=_imm;
 					qk[r]=0;
+
+					busy[r]=1;
+					opcode[r]=_opcode;
+					fun3[r]=_fun3;
+					fun7[r]=_fun7;
+					qi[rd]=r;
+					
 				end else begin
-					qk[r]=qi[rs2];
+					if(qi[rs1]==0) begin
+						vj[r]=qreg[rs1];
+						qj[r]=0;
+					end else begin
+						qj[r]=qi[rs1];
+					end
+					if(qi[rs2]) begin
+						vk[r]=qreg[rs2];
+						qk[r]=0;
+					end else begin
+						qk[r]=qi[rs2];
+					end
+
+					busy[r]=1;
+					opcode[r]=_opcode;
+					fun3[r]=_fun3;
+					fun7[r]=_fun7;
+					qi[rd]=r;
 				end
-				busy[r]=1;
-				opcode[r]=_opcode;
-				fun3[r]=_fun3;
-				fun7[r]=_fun7;
-				qi[rd]=r;
 			end
 		end
 		//exec
 
 
+$display("qreg[3]=%x",qreg[3]);
 		for(i=1;i<`RS_SIZE;i=i+1)begin
 			if(busy[i]) begin
 				if(opcode[i]==`OP_LOAD)begin
@@ -210,10 +259,12 @@ module rsreg(
 			end
 		end
 
+$display("qreg[3]=%x",qreg[3]);
 		//write
 		
 		for(i=1;i<`RS_SIZE;i=i+1)begin
-			if(busy[i]&&start[i]&&!alu_busy[i]) begin
+			if(busy[i]&&start[i]&&alu_done[i]) begin
+				res[i]=tres[i];
 				if(opcode[i]==`OP_LOAD)begin
 					if(mem_start&&!mem_busy)begin
 						res[i]=mem_out[i];
@@ -241,25 +292,27 @@ module rsreg(
 				end else begin
 					if(!alu_busy[i]) begin
 						res_get[i]=1;
+						$display("res=%x",res[i]);
+						$display("tres=%x",tres[i]);
 					end
 				end
 				
 			end	
 		end
 
-
+$display("qreg[3]=%x",qreg[3]);
 		for(i=0;i<`REG_SIZE;i=i+1)begin
-			if(res_get[qi[i]])begin
+			if(qi[i]!=0 && res_get[qi[i]])begin
 				qreg[i]=res[qi[i]];
 				qi[i]=0;
 			end
 		end
 		for(i=1;i<`RS_SIZE;i=i+1)begin
-			if(res_get[qj[i]])begin
+			if(qj[i]!=0 && res_get[qj[i]])begin
 				vj[i]=res[qj[i]];
 				qj[i]=0;
 			end
-			if(res_get[qk[i]])begin
+			if(qk[i]!=0 && res_get[qk[i]])begin
 				vk[i]=res[qk[i]];
 				qj[i]=0;
 			end
@@ -279,6 +332,11 @@ module rsreg(
 				end
 			end	
 		end
+
+		for(i=0;i<4;i=i+1)
+			$display("reg[%x]=%x",i,qreg[i]);
+		mem_start=0;
+		mem_start=1;
 	end
 
 endmodule

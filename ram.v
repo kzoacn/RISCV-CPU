@@ -1,6 +1,8 @@
 //`define MEM_SIZE 1024
 //`define MEM_BIT 32
 
+
+`define DEBUG 1'b1
 module ram(
 	input wire start,
 	input wire[31:0] adr,
@@ -32,6 +34,12 @@ module ram(
 			end
 			busy=0;
 		end
+
+		if(`DEBUG==1'b1)begin
+			for(i=0;i<5;i++)
+				$display("mem[%x]=%x",i,mem[i]);
+		end
+
 	end
 	
 //	assign mem[adr][31:0] = load ? in : 32'h00;

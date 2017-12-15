@@ -24,8 +24,9 @@ module decoder(
 		rs1<=instr[19:15];
 		rs2<=instr[24:20];
 //		opleft<=instr[30];
-		opCode<=instr[14:12];
-		
+		opCode<=instr[6:0];
+		fun3<=instr[14:12];
+		fun7<=instr[31:25];
 		case(instr[6:0])
 			`OP_IMM: begin
 				imm <= instr[31:20];

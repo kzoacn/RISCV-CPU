@@ -9,7 +9,8 @@ module alu(
 	output reg [31:0] res,
 	output reg zero,
 	output reg neg,
-	output reg busy
+	output reg busy,
+	output reg done
 	);
 
 	initial begin
@@ -17,21 +18,29 @@ module alu(
 	end
 	always @(posedge start) begin
 		if(!busy) begin
+		/*	$display("fun3=%x",fun3);
+			$display("fun7=%x",fun7);
+			$display("rs1=%x",rs1);
+			$display("rs2=%x",rs2);*/
 			busy=1;
+			done=0;
 			case(fun3)
-			`ALU_ADDSUB:res <= fun7[5]==1'b0 ?rs1+rs2:rs1-rs2;
-			`ALU_AND:	res <= rs1&rs2;
-			`ALU_OR:	res <= rs1|rs2;
-			`ALU_XOR:	res <= rs1^rs2;
-			`ALU_SLL:	res <= rs1<<rs2;
-			`ALU_SRLA:	res <= fun7[5]==1'b0 ? rs1 >> rs2 : $signed(rs2) >>> rs1;
-			`ALU_SLT:	res <= $signed(rs1) < $signed(rs2) ? 32'b1 : 32'b0;
-			`ALU_SLTU:	res <= $unsigned(rs1) < $unsigned(rs2) ? 32'b1 : 32'b0;
+			`ALU_ADDSUB:res = fun7[5]==1'b0 ?rs1+rs2:rs1-rs2;
+			`ALU_AND:	res = rs1&rs2;
+			`ALU_OR:	res = rs1|rs2;
+			`ALU_XOR:	res = rs1^rs2;
+			`ALU_SLL:	res = rs1<<rs2;
+			`ALU_SRLA:	res = fun7[5]==1'b0 ? rs1 >> rs2 : $signed(rs2) >>> rs1;
+			`ALU_SLT:	res = $signed(rs1) < $signed(rs2) ? 32'b1 : 32'b0;
+			`ALU_SLTU:	res = $unsigned(rs1) < $unsigned(rs2) ? 32'b1 : 32'b0;
 			endcase
+		$display("alu res=%x busy=%d",res,busy);
 			zero <= res==0? 1'b1:1'b0;
 			neg <= res<0 ? 1'b1:1'b0;
 			busy=0;
+			done=1;
 		end
+		
 	end
 endmodule
 /*

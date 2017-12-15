@@ -17,6 +17,9 @@ module instr_mem(
 	initial begin
 		for(i=0;i<MEM_SIZE;i=i+1)
 			mem[i]=0;
+		$readmemb("instr.bin",mem,0,0);
+
+		
 	end
 
 	always @ (*) begin
