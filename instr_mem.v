@@ -1,13 +1,12 @@
 //`define MEM_SIZE 1024
 //`define MEM_BIT 32
 
-module ram(
-	input wire start,
+module instr_mem(
+	input wire clk,
 	input wire[31:0] adr,
 	input wire load,
 	input wire[31:0] in,
-	output reg[31:0] out,
-	output reg busy
+	output reg[31:0] out
 	);
 
 	parameter MEM_SIZE=1024;
@@ -16,21 +15,16 @@ module ram(
 	integer i;
 
 	initial begin
-		busy=0;
 		for(i=0;i<MEM_SIZE;i=i+1)
 			mem[i]=0;
 	end
 
-	always @ (posedge start) begin
-		if(!busy) begin
-			busy=1;
-			if(load) begin
-				mem[adr]=in;
-				out<=32'h00;
-			end else begin
-				out<=mem[adr];
-			end
-			busy=0;
+	always @ (*) begin
+		if(load) begin
+			mem[adr]=in;
+			out<=32'h00;
+		end else begin
+			out<=mem[adr];
 		end
 	end
 	
