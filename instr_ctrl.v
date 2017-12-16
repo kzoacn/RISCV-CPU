@@ -19,6 +19,7 @@ module instr_ctrl(
 
 	reg[31:0] pc,instr;
 	reg is_fetch;
+	wire done;
 	wire[31:0] tmp_instr;
 	
 	instr_mem instr_mem(
@@ -26,7 +27,8 @@ module instr_ctrl(
 		.adr(pc),
 		.load(1'b0),
 		.in(32'h00),
-		.out(tmp_instr)
+		.out(tmp_instr),
+		.done(done)
 	);
 	decoder decode(
 		.clk(clk),
@@ -53,8 +55,10 @@ module instr_ctrl(
 
 		$display("is_fetch: %d",is_fetch);
 		$display("instr : %b",instr);
+		$display("pc : %b",pc);
+		instr=32'h00;
 		if(is_fetch) begin
-			if(!is_busy) begin
+			if(!is_busy&&done) begin
 				instr<=tmp_instr;
 				pc<=pc+4;
 				if(opcode==`OP_BRANCH) begin
