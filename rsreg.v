@@ -20,7 +20,21 @@
 //	assign alu[i].zero=zero[i]; \
 //	assign alu[i].neg=neg[i]; \
 //	assign alu[i].busy=alu_busy[i] 
-
+`define DEBUG for(i=0;i<4;i=i+1) \
+			$display("qi[%x]=%x",i,qi[i]); \
+		for(i=0;i<4;i=i+1) \
+			$display("qj[%x]=%x",i,qj[i]); \
+		for(i=0;i<4;i=i+1) \
+			$display("vj[%x]=%x",i,vj[i]); \
+		for(i=0;i<4;i=i+1) \
+			$display("qk[%x]=%x",i,qk[i]); \
+		for(i=0;i<4;i=i+1) \
+			$display("vk[%x]=%x",i,vk[i]); \
+		for(i=0;i<4;i=i+1) \
+			$display("reg[%x]=%x",i,qreg[i]); \
+		for(i=0;i<4;i=i+1) \
+			$display("start[%x]=%x",i,start[i]); \
+		$display("end")
 
 module rsreg(
 	input wire clk,
@@ -83,6 +97,7 @@ module rsreg(
 			qreg[i]=0;
 			imm[i]=0;que[i]=0;
 			res_get[i]=0;
+			start[i]=0;
 			//TODO clear
 		end
 	end
@@ -203,20 +218,9 @@ module rsreg(
 			end
 		end
 
+		#1;
 		$display("after new cmd");
-		for(i=0;i<4;i=i+1)
-			$display("qi[%x]=%x",i,qi[i]);
-		for(i=0;i<4;i=i+1)
-			$display("qj[%x]=%x",i,qj[i]);
-		for(i=0;i<4;i=i+1)
-			$display("vj[%x]=%x",i,vj[i]);
-		for(i=0;i<4;i=i+1)
-			$display("qk[%x]=%x",i,qk[i]);
-		for(i=0;i<4;i=i+1)
-			$display("vk[%x]=%x",i,vk[i]);
-		for(i=0;i<4;i=i+1)
-			$display("reg[%x]=%x",i,qreg[i]);
-		$display("end");
+		`DEBUG;
 		//exec
 
 
@@ -267,9 +271,8 @@ module rsreg(
 						start[i]=1;
 					end
 				end else begin
-					if(qj[i]==0&&qk[i]==0&&!alu_busy[i]) begin
+					if(qj[i]==0&&qk[i]==0&&!alu_busy[i]&&!start[i]) begin
 						
-						start[i]=0;
 						$display(" %x start calc vj %x vk %x",i,vj[i],vk[i]);
 						start[i]=1;
 					end
@@ -278,20 +281,9 @@ module rsreg(
 			end
 		end
 
+		#1;
 		$display("after exec");
-		for(i=0;i<4;i=i+1)
-			$display("qi[%x]=%x",i,qi[i]);
-		for(i=0;i<4;i=i+1)
-			$display("qj[%x]=%x",i,qj[i]);
-		for(i=0;i<4;i=i+1)
-			$display("vj[%x]=%x",i,vj[i]);
-		for(i=0;i<4;i=i+1)
-			$display("qk[%x]=%x",i,qk[i]);
-		for(i=0;i<4;i=i+1)
-			$display("vk[%x]=%x",i,vk[i]);
-		for(i=0;i<4;i=i+1)
-			$display("reg[%x]=%x",i,qreg[i]);
-		$display("end");
+		`DEBUG;
 		//write
 		
 		for(i=1;i<`RS_SIZE;i=i+1)begin
@@ -322,7 +314,7 @@ module rsreg(
 						res_get[i]=1;
 					end
 				end else begin
-					if(!alu_busy[i]) begin
+					if(!alu_busy[i]&&alu_done[i]) begin
 						res_get[i]=1;
 						$display("%x get res",i);
 						$display("res=%x",res[i]);
@@ -358,7 +350,7 @@ module rsreg(
 				start[i]=0;
 				res_get[i]=0;
 				qj[i]=0;qk[i]=0;
-
+				start[i]=0;
 				if(i==que[qhead])begin
 					qhead=(qhead+1)&(32'h1f);
 				end
@@ -371,20 +363,12 @@ module rsreg(
 			end
 		end
 
+		#1;
 		$display("after write");
-		for(i=0;i<4;i=i+1)
-			$display("qi[%x]=%x",i,qi[i]);
-		for(i=0;i<4;i=i+1)
-			$display("qj[%x]=%x",i,qj[i]);
-		for(i=0;i<4;i=i+1)
-			$display("vj[%x]=%x",i,vj[i]);
-		for(i=0;i<4;i=i+1)
-			$display("qk[%x]=%x",i,qk[i]);
-		for(i=0;i<4;i=i+1)
-			$display("vk[%x]=%x",i,vk[i]);
-		for(i=0;i<4;i=i+1)
-			$display("reg[%x]=%x",i,qreg[i]);
-		$display("end");
+		`DEBUG;
+		
+		
+		$display("wawawwaw");
 		mem_start=0;
 		mem_start=1;
 	end

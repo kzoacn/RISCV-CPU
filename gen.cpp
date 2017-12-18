@@ -5,8 +5,9 @@ int n=10;
 
 vector<string>op{"addi","xori"};
 
-int main(){
-srand(time(0));
+int main(int argc,char *argv[]){
+	sscanf(argv[1],"%d",&n);
+	srand(time(0));
 	freopen("instr.txt","w",stdout);
 	while(n--){
 		cout<<op[rand()%op.size()]<<" ";
