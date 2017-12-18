@@ -1,13 +1,16 @@
 `include "cpu.v"
 module cpu_tb;
+	parameter INS_SIZE=100;
 	reg clk;
 	integer i;
-	cpu cpu0(clk);
+	integer sz;
+	cpu #(.INS_SIZE(INS_SIZE))  cpu0(clk);
 	initial begin
 		$dumpfile("test.vcd");
 		$dumpvars(0,cpu0);
 		clk=0;
-		for(i=0;i<25;i=i+1)begin
+		for(i=0;i<5+INS_SIZE*10;i=i+1)begin
+			$display("clk is %d !!!!!!!!!",i);
 			#50 clk=~clk;
 		end
 	end

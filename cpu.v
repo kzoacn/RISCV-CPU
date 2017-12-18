@@ -13,7 +13,10 @@ module cpu(input clk);
 	wire[31:0] _imm;
 	wire[31:0] opc,npc;
 
-	instr_ctrl ic(
+	parameter INS_SIZE=1;
+	instr_ctrl 
+		#(.INS_SIZE(INS_SIZE))
+		ic(
 		.clk(clk),
 		.npc(npc),
 		.get_npc(get_npc),

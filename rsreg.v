@@ -1,7 +1,7 @@
 `include "opcode.h"
 `include "ram.v"
 `include "alu.v"
-`define RS_SIZE 3
+`define RS_SIZE 7
 // TODO rs_size -> 32
 `define REG_SIZE 32
 
@@ -30,7 +30,7 @@
 			$display("qk[%x]=%x",i,qk[i]); \
 		for(i=0;i<4;i=i+1) \
 			$display("vk[%x]=%x",i,vk[i]); \
-		for(i=0;i<4;i=i+1) \
+		for(i=0;i<6;i=i+1) \
 			$display("reg[%x]=%x",i,qreg[i]); \
 		for(i=0;i<4;i=i+1) \
 			$display("start[%x]=%x",i,start[i]); \
@@ -73,6 +73,11 @@ module rsreg(
 
 	`alu_link(1);
 	`alu_link(2);
+	`alu_link(3);
+	`alu_link(4);
+	`alu_link(5);
+	`alu_link(6);
+	`alu_link(7);
 
 
 	reg mem_start,mem_load;
@@ -127,7 +132,7 @@ module rsreg(
 		else begin : newcmd
 			integer r,i;
 			r=666;
-			for(i=1;i<`RS_SIZE;i=i+1) begin
+			for(i=`RS_SIZE-1;i>=1;i=i-1) begin
 				$display("busy[%x]=%b",i,busy[i]);
 				if(!busy[i]) begin
 					r=i;
@@ -202,12 +207,16 @@ module rsreg(
 					end else begin
 						qj[r]=qi[rs1];
 					end
-					if(qi[rs2]) begin
+					if(qi[rs2]==0) begin
 						vk[r]=qreg[rs2];
 						qk[r]=0;
+						$display("in1");
 					end else begin
 						qk[r]=qi[rs2];
+						$display("in2");
 					end
+					$display("rs=%x reg[rs2]=%x",rs2,qreg[rs2]);
+					$display("r=%x vk[r]=%x",r,vk[r]);
 
 					busy[r]=1;
 					opcode[r]=_opcode;
@@ -363,7 +372,6 @@ module rsreg(
 			end
 		end
 
-		#1;
 		$display("after write");
 		`DEBUG;
 		

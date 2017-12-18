@@ -11,15 +11,18 @@ module instr_mem(
 	);
 
 	parameter MEM_SIZE=1024;
-	
+	parameter INS_SIZE=1;
 	reg[31:0] mem[0:MEM_SIZE-1];
 	integer i;
+	integer num,fp;
 
 	initial begin
 		done=1;
 		for(i=0;i<MEM_SIZE;i=i+1)
 			mem[i]=0;
-		$readmemb("instr.bin",mem,0,0+3-1);
+		//$readmemh("instr_num.bin",num);
+		//$display("num=%x",num);
+		$readmemb("instr.bin",mem,0,0+INS_SIZE-1);
 
 		out=32'h0;
 	end

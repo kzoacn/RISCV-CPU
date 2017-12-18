@@ -17,12 +17,15 @@ module instr_ctrl(
 	output wire[31:0] opc
 	);
 
+	parameter INS_SIZE=1;
 	reg[31:0] pc,instr;
 	reg is_fetch;
 	wire done;
 	wire[31:0] tmp_instr;
 	
-	instr_mem instr_mem(
+	instr_mem 
+		#(.INS_SIZE(INS_SIZE))
+		instr_mem(
 		.clk(clk),
 		.adr(pc),
 		.load(1'b0),
