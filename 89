@@ -2,7 +2,7 @@
 `include "opcode.h"
 `include "ram.v"
 `include "alu.v"
-`define RS_SIZE 4
+`define RS_SIZE 7
 // TODO rs_size -> 32
 `define REG_SIZE 32
 
@@ -21,31 +21,20 @@
 //	assign alu[i].zero=zero[i]; \
 //	assign alu[i].neg=neg[i]; \
 //	assign alu[i].busy=alu_busy[i] 
-
-
-
-//$display("id=%x qi=%x qj=%x qk=%x vj=%x vk=%x opcode=%x ");
-
-
 `define DEBUG for(i=0;i<4;i=i+1) \
 			$display("qi[%x]=%x",i,qi[i]); \
-		for(i=1;i<4;i=i+1) \
+		for(i=0;i<4;i=i+1) \
 			$display("qj[%x]=%x",i,qj[i]); \
-		for(i=1;i<4;i=i+1) \
+		for(i=0;i<4;i=i+1) \
 			$display("vj[%x]=%x",i,vj[i]); \
-		for(i=1;i<4;i=i+1) \
+		for(i=0;i<4;i=i+1) \
 			$display("qk[%x]=%x",i,qk[i]); \
-		for(i=1;i<4;i=i+1) \
+		for(i=0;i<4;i=i+1) \
 			$display("vk[%x]=%x",i,vk[i]); \
-		for(i=1;i<6;i=i+1) \
+		for(i=0;i<6;i=i+1) \
 			$display("reg[%x]=%x",i,qreg[i]); \
-		for(i=1;i<4;i=i+1) \
+		for(i=0;i<4;i=i+1) \
 			$display("start[%x]=%x",i,start[i]); \
-		for(i=1;i<4;i=i+1) \
-			$display("fun7[%x]=%x",i,fun7[i]); \
-		mem_deb=0; \
-		mem_deb=1; \
-		mem_deb=0; \
 		$display("end")
 
 module rsreg(
@@ -69,7 +58,7 @@ module rsreg(
 	assign get_npc = 1'b0;
 	wire[31:0] tres[0:`RS_SIZE];
 	reg busy[0:`RS_SIZE],start[0:`RS_SIZE];
-	wire alu_busy[0:`RS_SIZE],alu_done[0:`RS_SIZE],mem_done;
+	wire alu_busy[0:`RS_SIZE],alu_done[0:`RS_SIZE];
 	reg[6:0] opcode[0:`RS_SIZE];
 	reg[2:0] fun3[0:`RS_SIZE];
 	reg[6:0] fun7[0:`RS_SIZE];
@@ -86,27 +75,23 @@ module rsreg(
 	`alu_link(1);
 	`alu_link(2);
 	`alu_link(3);
-//	`alu_link(4);
-//	`alu_link(5);
-//	`alu_link(6);
-//	`alu_link(7);
+	`alu_link(4);
+	`alu_link(5);
+	`alu_link(6);
+	`alu_link(7);
 
 
-	reg mem_start,mem_load,mem_deb;
+	reg mem_start,mem_load;
 	reg[31:0] mem_adr,mem_in;
 	wire[31:0] mem_out;
 	wire mem_busy;
-	reg[2:0] mem_siz;
 
-	ram mem(mem_start,mem_adr,mem_load,mem_in,mem_siz,mem_out,mem_busy,mem_done,mem_deb);
+	ram mem(mem_start,mem_adr,mem_load,mem_in,mem_out,mem_busy);
 
 
 	integer qhead,qtail,qsz,i;
 	initial begin : init
 		integer i;
-		mem_start=1'b0;mem_load=1'b0;
-		mem_adr=32'h0;mem_in=32'h0;
-		mem_siz=`MEM_WORD;
 		busy[0]=1'b1;
 		qhead=0;qtail=0;qsz=0;
 		for(i=0;i<=`RS_SIZE;i=i+1) begin
@@ -158,10 +143,9 @@ module rsreg(
 //			r=que[qhead];
 //			qhead=qhead&(32'h1f);
 			if(_opcode==`OP_LOAD || _opcode==`OP_STORE) begin
-				opcode[r]=_opcode;
 				que[qtail]=r;
 				qtail=(qtail+1)&(32'h1f);
-				fun7[r][2:0]=_fun3;
+
 				if(qi[rs1]==0) begin
 					vj[r]=qreg[rs1];
 					qj[r]=0;
@@ -173,8 +157,6 @@ module rsreg(
 
 				if(_opcode==`OP_LOAD) begin
 					qi[rd]=r;
-					qk[r]=0;
-					vk[r]=_imm;
 				end else begin
 					if(qi[rs2]==0)begin
 						vk[r]=qreg[rs2];
@@ -185,7 +167,6 @@ module rsreg(
 				end
 			end
 			else if(_opcode==`OP_BRANCH) begin
-				opcode[r]=_opcode;
 				if(qi[rs1]==0) begin
 					vj[r]=qreg[rs1];
 					qj[r]=0;
@@ -230,9 +211,13 @@ module rsreg(
 					if(qi[rs2]==0) begin
 						vk[r]=qreg[rs2];
 						qk[r]=0;
+						$display("in1");
 					end else begin
 						qk[r]=qi[rs2];
+						$display("in2");
 					end
+					$display("rs=%x reg[rs2]=%x",rs2,qreg[rs2]);
+					$display("r=%x vk[r]=%x",r,vk[r]);
 
 					busy[r]=1;
 					opcode[r]=_opcode;
@@ -250,45 +235,34 @@ module rsreg(
 
 		for(i=1;i<`RS_SIZE;i=i+1)begin
 			if(busy[i]) begin
-				$display("opcode=%b",opcode[i]);
 				if(opcode[i]==`OP_LOAD)begin
 					if(qj[i]==0&&i==que[qhead])begin
-						if(!start[i])begin
-							vk[i]=imm[i];
-							fun3[i]=`ALU_ADDSUB;
-							fun7[i][6]=1'b0;//7'b0000000;
-						end
-						if(start[i]&&!alu_busy[i]&&alu_done[i])begin
-							$display("load memory qidong!");
+						vk[i]=imm[i];
+						fun3[i]=`ALU_ADDSUB;
+						fun7[i]=7'b0000000;
+						start[i]=1;			
+						if(!alu_busy[i])begin
 							mem_adr=res[i];
-							mem_siz=fun7[i][2:0];
 							mem_load=0;
 							mem_start=0;
-							mem_start=1;	
+							mem_start=1;
 						end
-						start[i]=1;			
 					end
 				end else
 				if(opcode[i]==`OP_STORE)begin
-					if(qj[i]==0&&qk[i]==0&&i==que[qhead])begin
-						if(!start[i])begin
-							A[i]=vk[i];
-							vk[i]=imm[i];
-							$display("vk[i]=%x",vk[i]);
-							$display("imm[i]=%x",imm[i]);
-							fun3[i]=`ALU_ADDSUB;
-							fun7[i][6]=1'b0;//7'b0000000;
-						end
-						if(start[i]&&!alu_busy[i]&&alu_done[i])begin
-							$display("store memory qidong!");
+					if(qj[i]==0&&i==que[qhead])begin
+						A[i]=vk[i];
+						vk[i]=imm[i];
+						fun3[i]=`ALU_ADDSUB;
+						fun7[i]=7'b0000000;
+						start[i]=1;		
+						if(!alu_busy[i])begin
 							mem_adr=res[i];
-							mem_siz=fun7[i][2:0];
 							mem_in=A[i];
 							mem_load=1;
 							mem_start=0;
 							mem_start=1;
 						end
-						start[i]=1;		
 					end
 				end else
 				if(opcode[i]==`OP_BRANCH)begin
@@ -325,16 +299,14 @@ module rsreg(
 			if(busy[i]&&start[i]&&alu_done[i]&&!alu_busy[i]) begin
 				res[i]=tres[i];
 				if(opcode[i]==`OP_LOAD)begin
-					if(qj[i]==0&&mem_start&&!mem_busy&&mem_done&&i==que[qhead])begin
-						res[i]=mem_out;
+					if(mem_start&&!mem_busy)begin
+						res[i]=mem_out[i];
 						res_get[i]=1;
-						$display("load done");
 					end
 				end else
 				if(opcode[i]==`OP_STORE)begin
-					if(qj[i]==0&&mem_start&&!mem_busy&&mem_done&&i==que[qhead])begin
+					if(qj[i]==0&&i==que[qhead])begin
 						res_get[i]=1;
-						$display("store done");
 					end
 				end else
 				if(opcode[i]==`OP_BRANCH)begin
@@ -375,7 +347,7 @@ module rsreg(
 			end
 			if(qk[i]!=0 && res_get[qk[i]])begin
 				vk[i]=res[qk[i]];
-				qk[i]=0;
+				qj[i]=0;
 			end
 		end
 
@@ -388,7 +360,7 @@ module rsreg(
 				res_get[i]=0;
 				qj[i]=0;qk[i]=0;
 				start[i]=0;
-				if(qhead!=qtail&&i==que[qhead])begin
+				if(i==que[qhead])begin
 					qhead=(qhead+1)&(32'h1f);
 				end
 			end	
@@ -402,8 +374,11 @@ module rsreg(
 
 		$display("after write");
 		`DEBUG;
-		mem_start=0;
 		
+		
+		$display("wawawwaw");
+		mem_start=0;
+		mem_start=1;
 	end
 
 endmodule

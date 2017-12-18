@@ -10,6 +10,8 @@ string str(int x,int len){
 
 int reg[33];
 
+int mem[2333];
+
 //#define OP_IMM 0010011
 //#define OP_RRR 0110011
 
@@ -38,6 +40,26 @@ int main(){
 	string rd;
 	while(cin>>instr){
 		int rd,rs1,rs2,imm;
+
+		if(instr=="lw"){
+			cin>>rd>>rs1>>imm;
+			string FUN3="010";
+			reg[rd]=mem[(reg[rs1]+imm)/4];
+			cout<<str(imm,12)+str(rs1,5)+FUN3+str(rd,5)+string("0000011")<<endl;
+		}
+		if(instr=="sw"){
+			cin>>rs2>>rs1>>imm;
+			mem[(reg[rs1]+imm)/4]=reg[rs2];
+			string IM=str(imm,12);/*
+			cerr<<IM.substr(0,7)<<endl;
+			cerr<<str(rs2,5)<<endl;
+			cerr<<str(rs1,5)<<endl;
+			cerr<<"010"<<endl;
+			cerr<<IM.substr(7,5)<<endl;
+			cerr<<"0100011"<<endl;*/
+			cout<<IM.substr(0,7)+str(rs2,5)+str(rs1,5)+"010"+IM.substr(7,5)+string("0100011")<<endl;
+		}
+	
 		if(CMD_TYPE[instr]=='I'){
 			cin>>rd>>rs1>>imm;
 			string FUN3;
@@ -61,9 +83,11 @@ int main(){
 		}
 	}
 
-	for(int i=0;i<32;i++)
+	for(int i=0;i<8;i++)
 		fprintf(stderr,"reg[%d]=%x\n",i,reg[i]);
-
+	for(int i=0;i<8;i++)
+		fprintf(stderr,"mem[%d]=%x\n",i,mem[i]);
+	
 
 	return 0;
 }

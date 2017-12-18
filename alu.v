@@ -10,11 +10,14 @@ module alu(
 	output reg zero,
 	output reg neg,
 	output reg busy,
-	output reg done
+	output wire done
 	);
 
+	reg _done;
+
+	assign done=_done;
 	initial begin
-		busy=0;
+		busy=0;_done=0;
 	end
 	always @(posedge start) begin
 		if(!busy) begin
@@ -23,7 +26,7 @@ module alu(
 			$display("rs1=%x",rs1);
 			$display("rs2=%x",rs2);
 			busy=1;
-			done=0;
+			_done=0;
 			case(fun3)
 			`ALU_ADDSUB:res = fun7[5]==1'b0 ?rs1+rs2:rs1-rs2;
 			`ALU_AND:	res = rs1&rs2;
@@ -34,13 +37,16 @@ module alu(
 			`ALU_SLT:	res = $signed(rs1) < $signed(rs2) ? 32'b1 : 32'b0;
 			`ALU_SLTU:	res = $unsigned(rs1) < $unsigned(rs2) ? 32'b1 : 32'b0;
 			endcase
-		$display("alu res=%x busy=%d",res,busy);
-			zero <= res==0? 1'b1:1'b0;
-			neg <= res<0 ? 1'b1:1'b0;
+			zero= res==0? 1'b1:1'b0;
+			neg = res<0 ? 1'b1:1'b0;
 			busy=0;
-			done=1;
+		$display("done is not 1 here");
+			_done=1;
+		$display("alu res=%x busy=%d",res,busy);
 		end
-		
+	end
+	always @ (negedge start)begin
+		_done=0;
 	end
 endmodule
 /*
