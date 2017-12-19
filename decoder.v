@@ -53,7 +53,7 @@ module decoder(
 //				mux2 <= 1; mux3<=1; 
 			end
 			`OP_BRANCH: begin
-				imm<= {instr[31:25],instr[11:7]};
+				imm<= $signed({instr[31:25],instr[11:7],1'b0});
 //				mux2 <= 1; mux3<=1; 
 			end
 			`OP_LOAD: begin

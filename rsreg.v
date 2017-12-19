@@ -14,7 +14,9 @@
 	assign alu[i].rs2=vk[i]; \
 	assign alu_busy[i]=alu[i].busy; \
 	assign tres[i]=alu[i].res; \
-	assign alu_done[i]=alu[i].done
+	assign alu_done[i]=alu[i].done; \
+	assign alu_zero[i]=alu[i].zero; \
+	assign alu_neg[i]=alu[i].neg
 
 	
 //	assign alu[i].res=res[i];
@@ -58,20 +60,17 @@ module rsreg(
 	input wire[6:0] _fun7,
 	input wire[31:0] _imm,
 	input wire[31:0] opc,
-	output wire[31:0] npc,
-	output wire get_npc,
+	output reg[31:0] npc,
+	output reg get_npc,
 	output reg is_busy
 	
 	);
 
-	//TODO NOP
-	//TODO 
-	assign get_npc = 1'b0;
 	wire[31:0] tres[0:`RS_SIZE];
 	reg busy[0:`RS_SIZE],start[0:`RS_SIZE];
-	wire alu_busy[0:`RS_SIZE],alu_done[0:`RS_SIZE],mem_done;
+	wire alu_busy[0:`RS_SIZE],alu_done[0:`RS_SIZE],mem_done,alu_zero[0:`RS_SIZE],alu_neg[0:`RS_SIZE];
 	reg[6:0] opcode[0:`RS_SIZE];
-	reg[2:0] fun3[0:`RS_SIZE];
+	reg[2:0] fun3[0:`RS_SIZE],brcode[0:`RS_SIZE];
 	reg[6:0] fun7[0:`RS_SIZE];
 	reg[31:0] vj[0:`RS_SIZE],vk[0:`RS_SIZE];
 	reg[4:0] qj[0:`RS_SIZE],qk[0:`RS_SIZE],qi[0:`REG_SIZE];
@@ -129,7 +128,8 @@ module rsreg(
 	always @ (posedge clk) begin
 		//new cmd
 		#1;	
-
+		get_npc=0;
+		npc=opc;
 		$display("opcode=%b",_opcode);
 		$display("rd=%b",rd);
 		$display("fun3=%b",_fun3);
@@ -188,6 +188,7 @@ module rsreg(
 			end
 			else if(_opcode==`OP_BRANCH) begin
 				opcode[r]=_opcode;
+				brcode[r]=_fun3;
 				if(qi[rs1]==0) begin
 					vj[r]=qreg[rs1];
 					qj[r]=0;
@@ -298,17 +299,21 @@ module rsreg(
 					end
 				end else
 				if(opcode[i]==`OP_BRANCH)begin
-					if(qj[i]==0)begin
+					if(qj[i]==0&&qk[i]==0&&!alu_busy[i]&&!start[i]) begin
 						//TODO
-						case(fun3[i])
-							`OP_BEQ:;
-							`OP_BNE:;
-							`OP_BLT:;
-							`OP_BGE:;
-							`OP_BLTU:;
-							`OP_BGEU:;
-						endcase
-
+						if(brcode[i][1]==1'b1&&brcode[2]==1'b1)begin
+							if(brcode[i]==`OP_BLTU)begin
+								fun3[i]=`ALU_SLTU;
+							end else begin : tmper
+								reg[2:0] tmp;
+								tmp=vj[i];vj[i]=vk[i];vk[i]=tmp;
+								fun3[i]=`ALU_SLTU;
+							end
+						end else begin
+							fun3[i]=`ALU_ADDSUB;
+							fun7[i]=7'b0100000;
+						end
+						$display("branch qidong!");
 						start[i]=1;
 					end
 				end else begin
@@ -344,16 +349,17 @@ module rsreg(
 					end
 				end else
 				if(opcode[i]==`OP_BRANCH)begin
-					if(qj[i]==0)begin
+					if(!alu_busy[i]&&alu_done[i]) begin
 						//TODO
 						case(fun3[i])
-							`OP_BEQ:;
-							`OP_BNE:;
-							`OP_BLT:;
-							`OP_BGE:;
-							`OP_BLTU:;
-							`OP_BGEU:;
+							`OP_BEQ:res[i]=alu_zero[i];
+							`OP_BNE:res[i]=!alu_zero[i];
+							`OP_BLT:res[i]=alu_neg[i];
+							`OP_BGE:res[i]=(!alu_neg[i])&(!alu_zero[i]);
+							`OP_BLTU:res[i]=tres[i];
+							`OP_BGEU:res[i]=tres[i];
 						endcase
+						$display("brach jump = %x",res[i]);
 						res_get[i]=1;
 					end
 				end else begin
@@ -389,6 +395,10 @@ module rsreg(
 
 		for(i=1;i<`RS_SIZE;i=i+1)begin
 			if(res_get[i]) begin
+				if(opcode[i]==`OP_BRANCH)begin
+					if(res[i])npc=opc+imm[i];
+					else npc=opc;
+				end
 				busy[i]=0;
 				start[i]=0;
 				res_get[i]=0;
@@ -399,6 +409,7 @@ module rsreg(
 				end
 			end	
 		end
+		get_npc=1;
 		is_busy=1'b1;
 		for(i=1;i<`RS_SIZE;i=i+1)begin
 			if(!busy[i])begin
