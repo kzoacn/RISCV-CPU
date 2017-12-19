@@ -10,7 +10,7 @@ module instr_mem(
 	output reg done
 	);
 
-	parameter MEM_SIZE=1024;
+	parameter MEM_SIZE=4096;
 	parameter INS_SIZE=1;
 	reg[31:0] mem[0:MEM_SIZE-1];
 	integer i;
@@ -27,7 +27,7 @@ module instr_mem(
 		out=32'h0;
 	end
 
-	always @ (posedge clk) begin
+	always @ (*) begin
 		if(done)begin
 			done=0;
 			if(load) begin

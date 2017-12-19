@@ -21,10 +21,10 @@ module alu(
 	end
 	always @(posedge start) begin
 		if(!busy) begin
-			$display("fun3=%x",fun3);
-			$display("fun7=%x",fun7);
-			$display("rs1=%x",rs1);
-			$display("rs2=%x",rs2);
+			$display("fun3=%b",fun3);
+			$display("fun7=%b",fun7);
+			$display("rs1=%b",rs1);
+			$display("rs2=%b",rs2);
 			busy=1;
 			_done=0;
 			case(fun3)

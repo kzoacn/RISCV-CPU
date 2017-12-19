@@ -2,7 +2,7 @@
 `include "opcode.h"
 `include "ram.v"
 `include "alu.v"
-`define RS_SIZE 4
+`define RS_SIZE 7
 // TODO rs_size -> 32
 `define REG_SIZE 32
 
@@ -78,7 +78,7 @@ module rsreg(
 	reg[31:0] A[0:`RS_SIZE],res[0:`RS_SIZE];
 	reg[31:0] qreg[0:`REG_SIZE];
 	reg[31:0] imm[0:`REG_SIZE];
-	reg[31:0] que[0:`RS_SIZE];
+	reg[31:0] que[0:32];
 	reg res_get[0:`RS_SIZE];
 	alu alu[0:`RS_SIZE];
 
@@ -86,10 +86,10 @@ module rsreg(
 	`alu_link(1);
 	`alu_link(2);
 	`alu_link(3);
-//	`alu_link(4);
-//	`alu_link(5);
-//	`alu_link(6);
-//	`alu_link(7);
+	`alu_link(4);
+	`alu_link(5);
+	`alu_link(6);
+	`alu_link(7);
 
 
 	reg mem_start,mem_load,mem_deb;
@@ -121,12 +121,14 @@ module rsreg(
 			start[i]=0;
 			//TODO clear
 		end
+		for(i=0;i<=32;i=i+1)
+			que[i]=0;
 	end
 
 
 	always @ (posedge clk) begin
 		//new cmd
-		
+		#1;	
 
 		$display("opcode=%b",_opcode);
 		$display("rd=%b",rd);
@@ -247,6 +249,10 @@ module rsreg(
 		`DEBUG;
 		//exec
 
+		$display("qhead=%x",qhead);
+		$display("qtail=%x",qtail);
+		for(i=qhead;i<qtail;i=i+1)
+			$display("que[%x]=%x",i,que[i]);
 
 		for(i=1;i<`RS_SIZE;i=i+1)begin
 			if(busy[i]) begin
@@ -256,7 +262,7 @@ module rsreg(
 						if(!start[i])begin
 							vk[i]=imm[i];
 							fun3[i]=`ALU_ADDSUB;
-							fun7[i][6]=1'b0;//7'b0000000;
+							fun7[i][5]=1'b0;//7'b0000000;
 						end
 						if(start[i]&&!alu_busy[i]&&alu_done[i])begin
 							$display("load memory qidong!");
@@ -266,7 +272,7 @@ module rsreg(
 							mem_start=0;
 							mem_start=1;	
 						end
-						start[i]=1;			
+						start[i]=1;
 					end
 				end else
 				if(opcode[i]==`OP_STORE)begin
@@ -277,7 +283,7 @@ module rsreg(
 							$display("vk[i]=%x",vk[i]);
 							$display("imm[i]=%x",imm[i]);
 							fun3[i]=`ALU_ADDSUB;
-							fun7[i][6]=1'b0;//7'b0000000;
+							fun7[i][5]=1'b0;//7'b0000000;
 						end
 						if(start[i]&&!alu_busy[i]&&alu_done[i])begin
 							$display("store memory qidong!");
@@ -288,7 +294,7 @@ module rsreg(
 							mem_start=0;
 							mem_start=1;
 						end
-						start[i]=1;		
+						start[i]=1;
 					end
 				end else
 				if(opcode[i]==`OP_BRANCH)begin

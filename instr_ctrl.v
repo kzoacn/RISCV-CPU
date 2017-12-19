@@ -56,30 +56,31 @@ module instr_ctrl(
 
 	always @ (posedge clk) begin
 
-		$display("is_fetch: %d",is_fetch);
-		$display("instr : %b",instr);
-		$display("pc : %b",pc);
 		instr=32'h00;
 		if(is_fetch) begin
 			if(!is_busy&&done) begin
-				instr<=tmp_instr;
-				pc<=pc+4;
+				instr=tmp_instr;
+				pc=pc+4;
 				if(opcode==`OP_BRANCH) begin
-					is_fetch<=1'b0;
+					is_fetch=1'b0;
 				end
 			end
 			else begin
-				instr<=`OP_NOP;
-				pc<=pc;
+				instr=`OP_NOP;
+				pc=pc;
 			end
 		end
 		else begin
-			instr<=`OP_NOP;
+			instr=`OP_NOP;
 			if(get_npc) begin
-				is_fetch<=1'b1;
-				pc<=npc;
+				is_fetch=1'b1;
+				pc=npc;
 			end
 		end
+		$display("is_fetch: %d",is_fetch);
+		$display("instr : %b",instr);
+		$display("pc : %b",pc);
+		$display("is_busy : %b",is_busy);
 	end
 	
 endmodule

@@ -12,6 +12,7 @@ module cpu(input clk);
 	wire[6:0] _fun7;
 	wire[31:0] _imm;
 	wire[31:0] opc,npc;
+	wire is_busy;
 
 	parameter INS_SIZE=1;
 	instr_ctrl 
