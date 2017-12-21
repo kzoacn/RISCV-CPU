@@ -301,7 +301,7 @@ module rsreg(
 				if(opcode[i]==`OP_BRANCH)begin
 					if(qj[i]==0&&qk[i]==0&&!alu_busy[i]&&!start[i]) begin
 						//TODO
-						if(brcode[i][1]==1'b1&&brcode[2]==1'b1)begin
+						if(brcode[i][1]==1'b1&&brcode[i][2]==1'b1)begin
 							if(brcode[i]==`OP_BLTU)begin
 								fun3[i]=`ALU_SLTU;
 							end else begin : tmper
@@ -351,7 +351,7 @@ module rsreg(
 				if(opcode[i]==`OP_BRANCH)begin
 					if(!alu_busy[i]&&alu_done[i]) begin
 						//TODO
-						case(fun3[i])
+						case(brcode[i])
 							`OP_BEQ:res[i]=alu_zero[i];
 							`OP_BNE:res[i]=!alu_zero[i];
 							`OP_BLT:res[i]=alu_neg[i];
@@ -391,13 +391,19 @@ module rsreg(
 			end
 		end
 
+		$display("opc=%x",npc);
 
 
 		for(i=1;i<`RS_SIZE;i=i+1)begin
 			if(res_get[i]) begin
 				if(opcode[i]==`OP_BRANCH)begin
-					if(res[i])npc=opc+imm[i];
-					else npc=opc;
+					if(res[i])begin
+						npc=npc+imm[i];
+						$display("add %x to pc",imm[i]);
+					end
+					else begin
+						npc=npc+4;
+					end
 				end
 				busy[i]=0;
 				start[i]=0;
@@ -417,6 +423,7 @@ module rsreg(
 			end
 		end
 
+		$display("npc=%x",npc);
 		$display("after write");
 		`DEBUG;
 		mem_start=0;

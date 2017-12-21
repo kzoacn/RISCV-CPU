@@ -35,6 +35,12 @@ int main(){
 	CMD_TYPE["xor"]='R';
 
 
+	CMD_TYPE["beq"]='B';
+	CMD_TYPE["bne"]='B';
+	CMD_TYPE["blt"]='B';
+	CMD_TYPE["bge"]='B';
+
+
 
 	string instr;
 	string rd;
@@ -81,12 +87,26 @@ int main(){
 			if(instr=="and")reg[rd]=reg[rs1]&reg[rs2],FUN3="111";
 			cout<<fun7+str(rs2,5)+str(rs1,5)+FUN3+str(rd,5)+string("0110011")<<endl;
 		}
+		
+		if(CMD_TYPE[instr]=='B'){
+			cin>>rs1>>rs2>>imm;
+			string FUN3;
+			string fun7=str(0,7);
+			if(instr=="beq")FUN3="000";
+			if(instr=="bne")FUN3="001";
+			if(instr=="blt")FUN3="100";
+			if(instr=="bge")FUN3="101";
+			string IM=str(imm,12);
+			cout<<IM.substr(0,7)+str(rs2,5)+str(rs1,5)+FUN3+IM.substr(7,5)+string("1100011")<<endl;
+		}
 	}
 
-	for(int i=0;i<8;i++)
-		fprintf(stderr,"reg[%d]=%x\n",i,reg[i]);
-	for(int i=0;i<8;i++)
-		fprintf(stderr,"mem[%d]=%x\n",i,mem[i]);
+	cerr<<"trans done"<<endl;
+
+//	for(int i=0;i<8;i++)
+//		fprintf(stderr,"reg[%d]=%x\n",i,reg[i]);
+//	for(int i=0;i<8;i++)
+//		fprintf(stderr,"mem[%d]=%x\n",i,mem[i]);
 	
 
 	return 0;

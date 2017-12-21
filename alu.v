@@ -38,11 +38,12 @@ module alu(
 			`ALU_SLTU:	res = $unsigned(rs1) < $unsigned(rs2) ? 32'b1 : 32'b0;
 			endcase
 			zero= res==0? 1'b1:1'b0;
-			neg = res<0 ? 1'b1:1'b0;
+			neg = res[31];
 			busy=0;
 		$display("done is not 1 here");
 			_done=1;
 		$display("alu res=%x busy=%d",res,busy);
+		$display("alu zero=%x neg=%d",zero,neg);
 		end
 	end
 	always @ (negedge start)begin

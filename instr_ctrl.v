@@ -1,7 +1,7 @@
 `include "instr_mem.v"
 `include "decoder.v"
 
-
+`timescale 1ps / 1ps
 module instr_ctrl(
 	input wire clk,
 	input wire[31:0] npc,
@@ -35,7 +35,7 @@ module instr_ctrl(
 	);
 	decoder decode(
 		.clk(clk),
-		.instr(instr),
+		.instr(tmp_instr),
 		.rd(rd),
 		.rs1(rs1),
 		.rs2(rs2),
@@ -54,16 +54,24 @@ module instr_ctrl(
 		instr=32'h00;
 	end
 
+	assign opc=pc;
 	always @ (posedge clk) begin
 
 		instr=32'h00;
-		if(is_fetch) begin
+		$display("before");
+		$display("is_fetch: %d",is_fetch);
+		$display("instr : %b",instr);
+		$display("pc : %b",pc);
+		$display("is_busy : %b",is_busy);
+		$display("end");
+		if(is_fetch==1'b1) begin
 			if(!is_busy&&done) begin
 				instr=tmp_instr;
-				pc=pc+4;
+				#1;
 				if(opcode==`OP_BRANCH) begin
 					is_fetch=1'b0;
 				end
+				pc=pc+4;
 			end
 			else begin
 				instr=`OP_NOP;
@@ -71,7 +79,8 @@ module instr_ctrl(
 			end
 		end
 		else begin
-			instr=`OP_NOP;
+			$display("npc=%b",npc);
+			$display("get_npc=%b",npc);
 			if(get_npc) begin
 				is_fetch=1'b1;
 				pc=npc;
