@@ -55,6 +55,11 @@ module instr_ctrl(
 	end
 
 	assign opc=pc;
+
+	always @ (npc) begin
+		pc=npc;
+	end
+
 	always @ (posedge clk) begin
 
 		instr=32'h00;
@@ -71,11 +76,9 @@ module instr_ctrl(
 				if(opcode==`OP_BRANCH) begin
 					is_fetch=1'b0;
 				end
-				pc=pc+4;
 			end
 			else begin
 				instr=`OP_NOP;
-				pc=pc;
 			end
 		end
 		else begin
@@ -83,7 +86,6 @@ module instr_ctrl(
 			$display("get_npc=%b",npc);
 			if(get_npc) begin
 				is_fetch=1'b1;
-				pc=npc;
 			end
 		end
 		$display("is_fetch: %d",is_fetch);

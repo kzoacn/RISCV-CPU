@@ -20,6 +20,7 @@ map<string,char>CMD_TYPE;
 map<string,string>OP_FUN3;
 
 int main(){
+
 	freopen("instr.txt","r",stdin);
 	freopen("instr.bin","w",stdout);
 

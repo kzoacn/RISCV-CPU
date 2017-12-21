@@ -77,7 +77,7 @@ module rsreg(
 	reg[31:0] A[0:`RS_SIZE],res[0:`RS_SIZE];
 	reg[31:0] qreg[0:`REG_SIZE];
 	reg[31:0] imm[0:`REG_SIZE];
-	reg[31:0] que[0:32];
+	reg[31:0] que[0:32],tmp_pc;
 	reg res_get[0:`RS_SIZE];
 	alu alu[0:`RS_SIZE];
 
@@ -129,7 +129,7 @@ module rsreg(
 		//new cmd
 		#1;	
 		get_npc=0;
-		npc=opc;
+		tmp_pc=opc;
 		$display("opcode=%b",_opcode);
 		$display("rd=%b",rd);
 		$display("fun3=%b",_fun3);
@@ -144,7 +144,7 @@ module rsreg(
 		if((_opcode==`OP_IMM 
 			&& _fun3==`ALU_ADDSUB 
 			&& _fun7==7'b0000000
-			&& _imm==32'h00) || _opcode==7'b0000000) begin
+			&& _imm==32'h00) || _opcode==7'b0000000 || is_busy) begin
 			//NOP do nothing
 		end
 		else begin : newcmd
@@ -392,17 +392,18 @@ module rsreg(
 		end
 
 		$display("opc=%x",npc);
+		npc=tmp_pc+4;
 
 
 		for(i=1;i<`RS_SIZE;i=i+1)begin
 			if(res_get[i]) begin
 				if(opcode[i]==`OP_BRANCH)begin
 					if(res[i])begin
-						npc=npc+imm[i];
+						npc=npc-4+imm[i];
 						$display("add %x to pc",imm[i]);
 					end
 					else begin
-						npc=npc+4;
+//						npc=npc;
 					end
 				end
 				busy[i]=0;
@@ -422,6 +423,8 @@ module rsreg(
 				is_busy=1'b0;
 			end
 		end
+		if(is_busy)
+			npc=tmp_pc;
 
 		$display("npc=%x",npc);
 		$display("after write");
