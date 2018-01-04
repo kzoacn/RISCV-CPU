@@ -186,6 +186,22 @@ module rsreg(
 					end
 				end
 			end
+			else if(_opcode==`OP_LUI) begin
+				opcode[r]=_opcode;
+				busy[r]=1;
+				qi[rd]=r;
+				qj[r]=0;qk[r]=0;
+				vj[r]=_imm;vk[r]=0;
+			end
+			else if(_opcode==`OP_AUIPC) begin
+				
+			end
+			else if(_opcode==`OP_JAL) begin
+
+			end
+			else if(_opcode==`OP_JALR) begin
+
+			end
 			else if(_opcode==`OP_BRANCH) begin
 				opcode[r]=_opcode;
 				brcode[r]=_fun3;
@@ -297,6 +313,26 @@ module rsreg(
 						end
 						start[i]=1;
 					end
+				end 
+				else if(opcode[i]==`OP_LUI) begin
+					$display("LUI here");
+					if(qj[i]==0&&qk[i]==0)begin
+						if(!start[i])begin
+							fun3[i]=`ALU_ADDSUB;
+							fun7[i][5]=1'b0;
+							start[i]=1;
+							$display("LUI qidong!");
+						end
+					end
+				end
+				else if(opcode[i]==`OP_AUIPC) begin
+				
+				end
+				else if(opcode[i]==`OP_JAL) begin
+
+				end
+				else if(opcode[i]==`OP_JALR) begin
+
 				end else
 				if(opcode[i]==`OP_BRANCH)begin
 					if(qj[i]==0&&qk[i]==0&&!alu_busy[i]&&!start[i]) begin
@@ -347,6 +383,23 @@ module rsreg(
 						res_get[i]=1;
 						$display("store done");
 					end
+				end 
+				else if(opcode[i]==`OP_LUI) begin
+					if(!alu_busy[i]&&alu_done[i]) begin
+						res_get[i]=1;
+						$display("LUI %x get res",i);
+						$display("res=%x",res[i]);
+						$display("tres=%x",tres[i]);
+					end
+				end
+				else if(opcode[i]==`OP_AUIPC) begin
+				
+				end
+				else if(opcode[i]==`OP_JAL) begin
+
+				end
+				else if(opcode[i]==`OP_JALR) begin
+
 				end else
 				if(opcode[i]==`OP_BRANCH)begin
 					if(!alu_busy[i]&&alu_done[i]) begin

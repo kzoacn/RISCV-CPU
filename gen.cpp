@@ -14,23 +14,24 @@ int main(int argc,char *argv[]){
 	freopen("instr.txt","w",stdout);
 	while(n--){
 		int t=rand()%100;
-		if(t<50){
+		if(t<30){
 			cout<<op_ir[rand()%op_ir.size()]<<" ";
 			cout<<rand()%regn+1<<" ";
 			cout<<rand()%regn+1<<" ";
 			cout<<rand()%10<<endl;
-		}else if(t<70){
+		}else if(t<40){
 			cout<<op_rr[rand()%op_rr.size()]<<" ";
 			cout<<rand()%regn+1<<" ";
 			cout<<rand()%regn+1<<" ";
 			cout<<rand()%regn+1<<endl;
-		
-		}else{
+		}else if(t<60){
 			if(rand()%2){
 				cout<<"lw "<<rand()%regn+1<<" "<<0<<" "<<(rand()%memn)*4<<endl;
 			}else{
 				cout<<"sw "<<rand()%regn+1<<" "<<0<<" "<<(rand()%memn)*4<<endl;
 			}
+		}else{
+			cout<<"lui "<<rand()%regn+1<<" "<<rand()%10+1<<endl;
 		}
 	}	
 	return 0;

@@ -55,6 +55,9 @@ int main(){
 		int rd,rs1,rs2,imm;
 		cmder cmd;
 
+		if(instr=="lui"){
+			cin>>rd>>imm;
+		}
 		if(instr=="lw"){
 			cin>>rd>>rs1>>imm;
 		}
@@ -88,6 +91,9 @@ int main(){
 		rs1=cmds[cur].rs1;
 		rs2=cmds[cur].rs2;
 		imm=cmds[cur].imm;
+		if(instr=="lui"){
+			reg[rd]=imm;
+		}
 		if(instr=="lw"){
 			reg[rd]=mem[(reg[rs1]+imm)/4];
 		}

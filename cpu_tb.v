@@ -1,7 +1,7 @@
 `include "cpu.v"
 `timescale 1ns/1ps
 module cpu_tb;
-	parameter INS_SIZE=13;
+	parameter INS_SIZE=20;
 	reg clk;
 	integer i;
 	integer sz;

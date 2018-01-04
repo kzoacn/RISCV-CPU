@@ -48,6 +48,10 @@ int main(){
 	while(cin>>instr){
 		int rd,rs1,rs2,imm;
 
+		if(instr=="lui"){
+			cin>>rd>>imm;
+			cout<<str(imm,20)+str(rd,5)+string("0110111")<<endl;
+		}
 		if(instr=="lw"){
 			cin>>rd>>rs1>>imm;
 			string FUN3="010";
