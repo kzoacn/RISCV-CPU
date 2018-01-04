@@ -73,7 +73,7 @@ module instr_ctrl(
 			if(!is_busy&&done) begin
 				instr=tmp_instr;
 				#1;
-				if(opcode==`OP_BRANCH) begin
+				if(opcode==`OP_BRANCH || opcode==`OP_AUIPC || opcode==`OP_JAL || opcode==`OP_JALR) begin
 					is_fetch=1'b0;
 				end
 			end

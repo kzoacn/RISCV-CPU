@@ -48,6 +48,18 @@ int main(){
 	while(cin>>instr){
 		int rd,rs1,rs2,imm;
 
+		if(instr=="auipc"){
+			cin>>rd>>imm;
+			cout<<str(imm,20)+str(rd,5)+string("0010111")<<endl;
+		}
+		if(instr=="jal"){
+			cin>>rd>>imm;
+			cout<<str(imm,20)+str(rd,5)+string("1101111")<<endl;
+		}
+		if(instr=="jalr"){
+			cin>>rd>>rs1>>imm;
+			cout<<str(imm,12)+str(rs1,5)+string("000")+str(rd,5)+string("1100111")<<endl;
+		}
 		if(instr=="lui"){
 			cin>>rd>>imm;
 			cout<<str(imm,20)+str(rd,5)+string("0110111")<<endl;

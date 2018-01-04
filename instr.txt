@@ -1,20 +1,3 @@
-lui 5 5
-andi 6 3 6
-lui 3 6
-lui 6 3
-lui 2 1
-xori 5 2 7
-lui 5 8
-lui 5 3
-lui 3 6
-lui 6 10
-lui 1 9
-ori 3 6 5
-lui 5 1
-addi 1 5 3
-sw 4 0 4
-addi 6 5 2
-lw 6 0 8
-lui 5 2
-or 3 4 3
-sw 3 0 16
+jal 3 8
+lui 1 1
+lui 2 2

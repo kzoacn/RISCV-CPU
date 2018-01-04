@@ -194,12 +194,34 @@ module rsreg(
 				vj[r]=_imm;vk[r]=0;
 			end
 			else if(_opcode==`OP_AUIPC) begin
-				
+				opcode[r]=_opcode;
+				busy[r]=1;
+				imm[r]=_imm;
+				qi[rd]=r;
+				qj[r]=0;qk[r]=0;
+				vj[r]=_imm;vk[r]=opc;
 			end
 			else if(_opcode==`OP_JAL) begin
-
+				opcode[r]=_opcode;
+				busy[r]=1;
+				imm[r]=_imm;
+				qi[rd]=r;
+				qj[r]=0;qk[r]=0;
+				vj[r]=_imm;vk[r]=0;
 			end
 			else if(_opcode==`OP_JALR) begin
+				opcode[r]=_opcode;
+				busy[r]=1;
+				imm[r]=_imm;
+				qi[rd]=r;
+				if(qi[rs1]==0) begin
+					vj[r]=qreg[rs1];
+					qj[r]=0;
+				end else begin
+					qj[r]=qi[rs1];
+				end
+				qk[r]=0;
+				vk[r]=_imm;
 
 			end
 			else if(_opcode==`OP_BRANCH) begin
@@ -315,7 +337,6 @@ module rsreg(
 					end
 				end 
 				else if(opcode[i]==`OP_LUI) begin
-					$display("LUI here");
 					if(qj[i]==0&&qk[i]==0)begin
 						if(!start[i])begin
 							fun3[i]=`ALU_ADDSUB;
@@ -326,12 +347,36 @@ module rsreg(
 					end
 				end
 				else if(opcode[i]==`OP_AUIPC) begin
+					if(qj[i]==0&&qk[i]==0)begin
+						if(!start[i])begin
+							fun3[i]=`ALU_ADDSUB;
+							fun7[i][5]=1'b0;
+							start[i]=1;
+							$display("AUIPC qidong!");
+						end
+					end
 				
 				end
 				else if(opcode[i]==`OP_JAL) begin
+					if(qj[i]==0&&qk[i]==0)begin
+						if(!start[i])begin
+							fun3[i]=`ALU_ADDSUB;
+							fun7[i][5]=1'b0;
+							start[i]=1;
+							$display("JAL qidong!");
+						end
+					end
 
 				end
 				else if(opcode[i]==`OP_JALR) begin
+					if(qj[i]==0&&qk[i]==0)begin
+						if(!start[i])begin
+							fun3[i]=`ALU_ADDSUB;
+							fun7[i][5]=1'b0;
+							start[i]=1;
+							$display("JALR qidong!");
+						end
+					end
 
 				end else
 				if(opcode[i]==`OP_BRANCH)begin
@@ -393,12 +438,26 @@ module rsreg(
 					end
 				end
 				else if(opcode[i]==`OP_AUIPC) begin
-				
+					if(!alu_busy[i]&&alu_done[i]) begin
+						res_get[i]=1;
+						$display("AUIPC %x get res",i);
+						$display("res=%x",res[i]);
+					end
 				end
 				else if(opcode[i]==`OP_JAL) begin
+					if(!alu_busy[i]&&alu_done[i]) begin
+						res_get[i]=1;
+						$display("JAL %x get res",i);
+						$display("res=%x",res[i]);
+					end
 
 				end
 				else if(opcode[i]==`OP_JALR) begin
+					if(!alu_busy[i]&&alu_done[i]) begin
+						res_get[i]=1;
+						$display("JALR %x get res",i);
+						$display("res=%x",res[i]);
+					end
 
 				end else
 				if(opcode[i]==`OP_BRANCH)begin
@@ -450,6 +509,9 @@ module rsreg(
 
 		for(i=1;i<`RS_SIZE;i=i+1)begin
 			if(res_get[i]) begin
+				if(opcode[i]==`OP_AUIPC || opcode[i]==`OP_JAL || opcode[i]==`OP_JALR)begin
+					npc=res[i];
+				end
 				if(opcode[i]==`OP_BRANCH)begin
 					if(res[i])begin
 						npc=npc-4+imm[i];

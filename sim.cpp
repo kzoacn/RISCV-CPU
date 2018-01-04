@@ -55,6 +55,15 @@ int main(){
 		int rd,rs1,rs2,imm;
 		cmder cmd;
 
+		if(instr=="auipc"){
+			cin>>rd>>imm;
+		}
+		if(instr=="jal"){
+			cin>>rd>>imm;
+		}
+		if(instr=="jalr"){
+			cin>>rd>>rs1>>imm;
+		}
 		if(instr=="lui"){
 			cin>>rd>>imm;
 		}
@@ -115,7 +124,10 @@ int main(){
 			if(instr=="or")reg[rd]=reg[rs1]|reg[rs2];
 			if(instr=="and")reg[rd]=reg[rs1]&reg[rs2];
 		}
-		if(CMD_TYPE[instr]=='B'){
+		if(CMD_TYPE[instr]=='B' || instr=="auipc" || instr=="jal" || instr=="jalr"){
+			if(instr=="jal"){cur=imm/4;reg[rd]=cur*4;}
+			if(instr=="jalr"){cur=imm/4+reg[rs1];reg[rd]=cur*4;}
+			if(instr=="auipc"){cur=cur+imm/4;reg[rd]=cur*4;}
 			if(instr=="beq")cur= reg[rs1]==reg[rs2] ? cur+imm/4 : cur+1;
 			if(instr=="bne")cur= reg[rs1]!=reg[rs2] ? cur+imm/4 : cur+1;
 			if(instr=="blt")cur= reg[rs1]<reg[rs2] ? cur+imm/4 : cur+1;
