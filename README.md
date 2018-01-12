@@ -1,5 +1,17 @@
 # RISCV-CPU
 
+## Mini Tomasulo
+
+简化版Tomasulo
+
+不区分不同种类的保留站
+为每个保留站直接附带一个ALU
+
+
+由于忙于上板，没有时间写cache和rob
+对于跳转指令的处理采用了直接加stall
+
+
 ## TODO
 
  - L*
