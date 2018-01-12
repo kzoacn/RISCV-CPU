@@ -1,0 +1,17 @@
+reg[0]=0
+reg[1]=a
+reg[2]=7
+reg[3]=3
+reg[4]=b
+reg[5]=9
+reg[6]=2
+reg[7]=0
+mem[0]=1
+mem[1]=9
+mem[2]=9
+mem[3]=8
+mem[4]=4
+mem[5]=0
+mem[6]=0
+mem[7]=0
+

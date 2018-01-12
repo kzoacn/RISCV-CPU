@@ -77,7 +77,7 @@ module ram(
 	end
 	always @ (posedge deb)begin
 		if(`DEBUG==1'b1)begin
-			for(i=0;i<5*4;i++)
+			for(i=0;i<5*4;i=i+1)
 				$display("mem[%x]=%x",i,mem[i]);
 		end
 

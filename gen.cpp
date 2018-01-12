@@ -9,7 +9,8 @@ vector<string>op_rr{"add","xor","sub","or","and"};
 int regn=6;
 int memn=5;
 int main(int argc,char *argv[]){
-	sscanf(argv[1],"%d",&n);
+	scanf("%d",&n);
+	//sscanf(argv[1],"%d",&n);
 	srand(time(0));
 	freopen("instr.txt","w",stdout);
 	while(n--){
@@ -26,9 +27,9 @@ int main(int argc,char *argv[]){
 			cout<<rand()%regn+1<<endl;
 		}else if(t<60){
 			if(rand()%2){
-				cout<<"lw "<<rand()%regn+1<<" "<<0<<" "<<(rand()%memn)*4<<endl;
+				cout<<"lw "<<rand()%regn+1<<" "<<0<<" "<<(rand()%memn)*4+5000<<endl;
 			}else{
-				cout<<"sw "<<rand()%regn+1<<" "<<0<<" "<<(rand()%memn)*4<<endl;
+				cout<<"sw "<<rand()%regn+1<<" "<<0<<" "<<(rand()%memn)*4+5000<<endl;
 			}
 		}else{
 			cout<<"lui "<<rand()%regn+1<<" "<<rand()%10+1<<endl;

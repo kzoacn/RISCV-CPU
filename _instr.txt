@@ -1,0 +1,4 @@
+addi 1 0 3
+add 2 2 1
+addi 1 1 -1
+bne 0 1 -8

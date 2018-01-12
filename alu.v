@@ -1,6 +1,6 @@
 `include "opcode.h"
 
-module alu(
+module ALU(
 	input start,
 	input [6:0] fun7,
 	input [2:0] fun3,
@@ -43,6 +43,7 @@ module alu(
 		$display("done is not 1 here");
 			_done=1;
 		$display("alu res=%x busy=%d",res,busy);
+		$display("alu fun7[5]=%b",fun7[5]);
 		$display("alu zero=%x neg=%d",zero,neg);
 		end
 	end

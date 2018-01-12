@@ -3,6 +3,7 @@
 
 module instr_mem(
 	input wire clk,
+	input wire[3:0] counter,
 	input wire[31:0] adr,
 	input wire load,
 	input wire[31:0] in,
@@ -10,7 +11,7 @@ module instr_mem(
 	output reg done
 	);
 
-	parameter MEM_SIZE=4096;
+	parameter MEM_SIZE=28000;
 	parameter INS_SIZE=1;
 	reg[31:0] mem[0:MEM_SIZE-1];
 	integer i;
@@ -22,8 +23,10 @@ module instr_mem(
 			mem[i]=0;
 		//$readmemh("instr_num.bin",num);
 		//$display("num=%x",num);
-		$readmemb("instr.bin",mem,0,0+INS_SIZE-1);
-
+		$readmemb("E:/CPU/simu/instr.bin",mem,0,0+INS_SIZE-1);
+		//$readmemh("E:/CPU/RISCV-CPU/test.in",mem,0,0+INS_SIZE-1);
+		//$readmemh("E:\\CPU\\RISCV-CPU\\test.in",mem,0,0+INS_SIZE-1);
+        $display("mem[0]=%b",mem[0]);
 		out=32'h0;
 	end
 

@@ -1,7 +1,7 @@
 `include "opcode.h"
 
 module decoder(
-	input clk,
+	input wire clk,
 	input wire[31:0]instr,
 	output reg[4:0]rd,
 	output reg[4:0]rs1,
@@ -19,7 +19,13 @@ module decoder(
 
 
 	always @ (*) begin
-
+    /*imm20_r     = {instr[31:12], 12'b0};
+    
+    imm12_r     = {{20{instr[31]}}, instr[31:20]};
+    bimm_r      = {{19{instr[31]}}, instr[31], instr[7], instr[30:25], instr[11:8], 1'b0};
+    jimm20_r    = {{12{instr[31]}}, instr[19:12], instr[20], instr[30:25], instr[24:21], 1'b0};
+    storeimm_r  = {{20{instr[31]}}, instr[31:25], instr[11:7]};
+    shamt_r     = instr[24:20];*/
 		rd<=instr[11:7];
 		rs1<=instr[19:15];
 		rs2<=instr[24:20];
@@ -29,7 +35,7 @@ module decoder(
 		fun7<=instr[31:25];
 		case(instr[6:0])
 			`OP_IMM: begin
-				imm <= instr[31:20];
+				imm <= {{20{instr[31]}}, instr[31:20]};
 //				mux2 <= 1; mux3<=1; 
 			end
 			`OP_OP: begin
@@ -37,31 +43,31 @@ module decoder(
 //				mux2 <= 1; mux3<=0; 
 			end
 			`OP_LUI: begin
-				imm<=instr[31:12];
+				imm<={instr[31:12],12'b0 };
 //				mux2 <= 1; mux3<=1; 
 			end
 			`OP_AUIPC: begin
-				imm<=instr[31:12];
+				imm<={instr[31:12],12'b0 };
 //				mux2 <= 0; mux3<=1; 
 			end
 			`OP_JAL: begin
-				imm<=instr[31:12];
+				imm<= {{12{instr[31]}}, instr[19:12], instr[20], instr[30:25], instr[24:21], 1'b0};
 //				mux2 <= 1; mux3<=1; 
 			end
 			`OP_JALR: begin
-				imm<=instr[31:20];	
+				imm<={{20{instr[31]}}, instr[31:20]};	
 //				mux2 <= 1; mux3<=1; 
 			end
 			`OP_BRANCH: begin
-				imm<= $signed({instr[31:25],instr[11:7]});
+				imm<=  {{19{instr[31]}}, instr[31], instr[7], instr[30:25], instr[11:8], 1'b0};
 //				mux2 <= 1; mux3<=1; 
 			end
 			`OP_LOAD: begin
-				imm<= instr[31:20];
+				imm<= {{20{instr[31]}}, instr[31:20]};
 //				mux2 <= 1; mux3<=1; 
 			end
 			`OP_STORE: begin
-				imm<= {instr[31:25],instr[11:7]};
+				imm<= {{20{instr[31]}}, instr[31:25], instr[11:7]};
 //				mux2 <= 1; mux3<=1; 
 			end
 			`OP_MEM:
